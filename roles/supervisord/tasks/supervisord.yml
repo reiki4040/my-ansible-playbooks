@@ -1,0 +1,34 @@
+- name: install pip
+  tags: supervisord
+  apt: pkg={{ item }} update_cache=yes
+  with_items:
+    - python-pip
+
+- name: install supervisord
+  pip: name=supervisor
+   
+- name: mkdir {{logdir}}/supervisord
+  file: path={{logdir}}/supervisord
+    state=directory
+    owner={{supervisor_user}} group={{supervisor_group}}
+    mode=775
+  
+- name: mkdir /etc/supervisord.d
+  file: path=/etc/supervisord.d
+    state=directory
+    owner={{supervisor_user}} group={{supervisor_group}}
+    mode=775
+  
+- name: create /etc/supervisord.conf
+  template: src=supervisord.conf.j2 dest=/etc/supervisord.conf
+  notify:
+    - restart supervisord
+
+- name: create initctl /etc/init/supervisord.conf
+  template:
+    src=init.supervisord.conf.j2
+    dest=/etc/init/supervisord.conf
+    owner={{supervisor_user}} group={{supervisor_group}}
+    mode=640
+  notify:
+      - restart supervisord
