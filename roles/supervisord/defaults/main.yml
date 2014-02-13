@@ -1,0 +1,5 @@
+piddir: /var/run
+logdir: /var/log
+supervisor_user: root
+supervisor_group: root
+

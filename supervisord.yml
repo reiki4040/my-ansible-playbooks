@@ -1,0 +1,6 @@
+- hosts: app_servers 
+#  user: ${remote_user}
+  user: "{{ remote_user }}"
+  sudo: yes
+  roles:
+    - supervisord
