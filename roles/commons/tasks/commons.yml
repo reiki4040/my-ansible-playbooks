@@ -13,3 +13,12 @@
   with_items:
     - build-essential
     - python-pip
+
+- name: install dependency packages for ansible apt module
+  tags:
+    - common
+    - ansible
+  apt: pkg={{item}} force=no update_cache=yes
+  with_items:
+    - python-pycurl
+    - python-apt
