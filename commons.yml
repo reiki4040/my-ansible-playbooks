@@ -1,0 +1,5 @@
+- hosts: app_servers 
+  user: "{{ remote_user }}"
+  sudo: yes
+  roles:
+    - commons 

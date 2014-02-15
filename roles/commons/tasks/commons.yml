@@ -1,0 +1,15 @@
+- name: install commons packages
+  tags: common
+  apt: pkg={{item}} force=yes update_cache=yes
+  with_items:
+    - language-pack-ja
+    - vim
+    - nkf
+    - tree
+
+- name: install dev tools
+  tags: common
+  apt: pkg={{item}} force=yes update_cache=yes
+  with_items:
+    - build-essential
+    - python-pip
