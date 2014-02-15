@@ -1,0 +1,9 @@
+#nginx_srcdir: /home/vagrant/nginx_src
+nginx_srcdir: /tmp/nginx_src
+nginx_logdir: /var/log/nginx
+nginx_www_dir: /var/share/nginx/html
+nginx_version: 1.4.5
+luajit_version: 2.0.1
+lua_nginx_module_version: 0.9.4
+ngx_devel_kit_version: 0.2.19
+ngx_http_redis_version: 0.3.7

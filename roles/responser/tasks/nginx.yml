@@ -1,0 +1,139 @@
+- name: install dependency modules for nginx build 
+  tags: nginx-install
+  apt: pkg={{item}} force=no update_cache=yes
+  with_items:
+    - gcc
+    - libpcre3 
+    - libpcre3-dev
+    - zlib1g
+    - zlib1g-dev
+    - openssl
+#    - libxslt1-dev # xslt module
+#    - libgeoip-dev # geoip module
+
+- name: create work dir
+  tags: nginx-install
+  file: 
+    path={{ nginx_srcdir }}
+    state=directory
+    owner={{ remote_user }}
+    group={{ remote_user }}
+    mode=755
+    recurse=yes
+
+- name: create nginx group
+  tags: nginx-install
+  group: name=nginx system=yes
+
+- name: create nginx user
+  tags: nginx-install
+  user: name=nginx comment="nginx user" group=nginx createhome=no shell=/bin/false system=yes
+
+- name: create directory
+  tags: nginx-install
+  file:
+    path=/var/lib/nginx
+    state=directory
+    owner=nginx
+    group=nginx
+    mode=755
+
+- name: create www directory
+  tags: nginx-install
+  file:
+    path=/var/share/nginx/html
+    state=directory
+    owner=nginx
+    group=nginx
+    mode=755
+    recurse=yes
+
+- name: make index.html
+  tags: nginx-install
+  template: src=index.html.j2 dest=/var/share/nginx/html/index.html
+    owner=nginx group=nginx mode=755
+
+- name: download LuaJIT source
+  tags: nginx-install
+  get_url: 
+    url=http://luajit.org/download/LuaJIT-{{ luajit_version }}.tar.gz
+    dest={{ nginx_srcdir }}/LuaJIT-{{ luajit_version }}.tar.gz
+
+- name: unarchive LuaJIT
+  tags: nginx-install
+  command: tar xzvf LuaJIT-{{ luajit_version }}.tar.gz
+    chdir={{ nginx_srcdir }}
+
+- name: build LuaJIT
+  command: make PREFIX=/usr/local/luajit-{{ luajit_version }}
+    chdir={{ nginx_srcdir }}/LuaJIT-{{ luajit_version }}
+
+- name: build LuaJIT
+  command: make install PREFIX=/usr/local/luajit-{{ luajit_version }}
+    chdir={{ nginx_srcdir }}/LuaJIT-{{ luajit_version }}
+
+- name: download lua-nginx-module source
+  tags: nginx-install
+  get_url: 
+    url=https://github.com/chaoslawful/lua-nginx-module/archive/v{{ lua_nginx_module_version }}.tar.gz
+    dest={{ nginx_srcdir }}/lua-nginx-module-{{ lua_nginx_module_version }}.tar.gz
+
+- name: unarchive lua-nginx-module
+  tags: nginx-install
+  command: tar xzvf lua-nginx-module-{{ lua_nginx_module_version }}.tar.gz
+    chdir={{ nginx_srcdir }}
+
+- name: download ngx-devel-kit source
+  tags: nginx-install
+  get_url: 
+    url=https://github.com/simpl/ngx_devel_kit/archive/v{{ ngx_devel_kit_version }}.tar.gz
+    dest={{ nginx_srcdir }}/ngx-devel-kit-{{ ngx_devel_kit_version }}.tar.gz
+
+- name: unarchive ngx-devel-kit
+  tags: nginx-install
+  command: tar xzvf ngx-devel-kit-{{ ngx_devel_kit_version }}.tar.gz 
+    chdir={{ nginx_srcdir }}
+
+- name: download ngx_http_redis source
+  tags: nginx-install
+  get_url: 
+    url=http://people.freebsd.org/~osa/ngx_http_redis-{{ ngx_http_redis_version }}.tar.gz
+    dest={{ nginx_srcdir }}/ngx_http_redis-{{ ngx_http_redis_version }}.tar.gz
+
+- name: unarchive ngx_http_redis
+  tags: nginx-install
+  command: tar xzvf ngx_http_redis-{{ ngx_http_redis_version }}.tar.gz
+    chdir={{ nginx_srcdir }}
+
+- name: download nginx source
+  tags: nginx-install
+  get_url: 
+    url=http://nginx.org/download/nginx-{{ nginx_version }}.tar.gz
+    dest={{ nginx_srcdir }}/nginx-{{ nginx_version }}.tar.gz
+
+- name: unarchive nginx
+  tags: nginx-install
+  command: tar xzvf nginx-{{ nginx_version }}.tar.gz
+    chdir={{ nginx_srcdir }}
+
+- name: deploy nginx builder
+  template: src=build_nginx.sh.j2 dest={{ nginx_srcdir }}/build_nginx.sh mode=755
+
+- name: build nginx
+  tags: nginx-install
+  command: ./build_nginx.sh
+    chdir={{ nginx_srcdir }}
+  notify:
+    - restart nginx
+
+- name: init.d script
+  tags: nginx-install
+  template: src=nginx.init.j2 dest=/etc/init.d/nginx mode=744
+  notify:
+    - restart nginx
+
+- name: nginx config deploy
+  tags: nginx-config-update
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
+  notify:
+    - restart nginx
