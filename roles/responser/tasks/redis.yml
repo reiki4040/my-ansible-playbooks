@@ -1,0 +1,7 @@
+- name: install redis
+  tags:
+   - responser
+   - redis
+  apt: pkg={{item}} force=yes update_cache=yes
+  with_items:
+    - redis-server
