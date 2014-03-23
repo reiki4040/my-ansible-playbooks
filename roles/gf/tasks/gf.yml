@@ -1,0 +1,88 @@
+- name: install dependency modules for growthforecast 
+  tags: install-gf 
+  apt: pkg={{item}} force=no update_cache=yes
+  with_items:
+    - build-essential
+    - curl
+    - rrdtool
+    - librrd4
+    - pkg-config
+    - librrds-perl
+    - groff
+    - autotools-dev
+    - gettext
+    - quilt
+    - zlib1g-dev
+    - libpng12-dev
+    - libcairo2-dev
+    - libpango1.0-dev
+    - libfreetype6-dev
+    - libdbi-dev
+    - libxml2-dev
+
+- name: create growthforecast log dir
+  tags: install-gf
+  file: 
+    path={{ gf_log_dir }}
+    state=directory
+    owner={{ gf_user }}
+    group={{ gf_group }}
+    mode=755
+    recurse=yes
+
+- name: create growthforecast dir
+  tags: install-gf
+  file: 
+    path={{ gf_dir }}
+    state=directory
+    owner={{ gf_user }}
+    group={{ gf_group }}
+    mode=755
+    recurse=yes
+
+- name: install cpanm
+  tags: install-gf
+  command: curl -L http://cpanmin.us | perl - App::cpanminus
+    creates=/usr/local/bin/cpanm
+
+- name: install local::lib 
+  tags: install-gf
+  command: cpanm local::lib 
+
+- name: install Alien::RRDtool
+  tags: install-gf
+  command: cpanm --installdeps Alien::RRDtool
+
+- name: install growthforecast
+  tags: install-gf
+  command: cpanm -n GrowthForecast
+
+- name: create growthforecast.ini for supervisor
+  tags:
+    - install-gf
+    - reload-gf-supervisord
+  ini_file: dest="{{ supervisord_conf_dir }}/growthforecast.ini" section="program:growthforecast"
+            option="{{ item.option }}" value="{{ item.value }}"
+  with_items:
+    - option: command
+      value: "/usr/local/bin/growthforecast.pl --data-dir {{ gf_dir }} --port {{ gf_port }}"
+    - option: directory
+      value: "{{ gf_dir }}"
+    - option: user
+      value: "{{ gf_user }}"
+    - option: autostart
+      value: "true"
+    - option: autorestart
+      value: "true"
+    - option: stopwaitsecs
+      value: 600
+    - option: stdout_logfile
+      value: "{{ gf_log_dir }}/gf_stdout.log"
+    - option: stderr_logfile
+      value: "{{ gf_log_dir }}/gf_stderr.log"
+    - option: logfile_maxbytes
+      value: "{{ gf_log_max_size }}"
+    - option: logfile_backups
+      value: "{{ gf_log_backup_count }}"
+  notify:
+    - reload growthforecast

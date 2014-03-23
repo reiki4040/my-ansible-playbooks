@@ -1,0 +1,8 @@
+gf_dir: /opt/growthforecast
+gf_user: vagrant
+gf_group: vagrant
+gf_port: 35125
+gf_log_dir: /var/log/growthforecast
+gf_log_max_size: 10MB
+gf_log_backup_count: 10
+supervisord_conf_dir: /etc/supervisord.d

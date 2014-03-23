@@ -1,0 +1,89 @@
+user nginx nginx;
+worker_processes 2;
+
+error_log {{ nginx_logdir }}/error.log error;
+
+pid /var/run/nginx.pid;
+
+events {
+  worker_connections  1024;
+}
+
+
+http {
+  include       mime.types;
+  default_type  application/octet-stream;
+
+  log_format  ltsv  'time:$time_local\t'
+                    'host:$remote_addr\t'
+                    'request:$request\t'
+                    'status:$status\t'
+                    'size:$body_bytes_sent\t'
+                    'referer:$http_referer\t'
+                    'ua:$http_user_agent\t'
+                    'reqtime:$request_time\t'
+                    'upsttime:$upstream_response_time';
+
+  access_log  {{ nginx_logdir }}/access.log  ltsv;
+
+  upstream static_page {
+    server localhost;
+  }
+
+  sendfile        on;
+  keepalive_timeout  65;
+
+  server {
+    listen       80;
+    server_name  localhost;
+
+    #charset koi8-r;
+    #access_log  {{ nginx_logdir }}/access.log  ltsv;
+
+    location / {
+      root   {{ nginx_www_dir }};
+      index  index.html;
+    }
+
+    location /static {
+      proxy_pass http://static_page/;
+    }
+
+    location /lua-redis-cache {
+      default_type text/html;
+      content_by_lua '
+        local res = ngx.location.capture("/redis")
+        if res.status == ngx.HTTP_OK then
+          ngx.say(res.body)
+        else
+          ngx.exit(ngx.HTTP_FORBIDDEN)
+        end
+      ';
+    }
+
+    location /redis {
+      internal;
+      set            $redis_key "cache";
+      redis_pass     127.0.0.1:6379;
+      default_type   text/html;
+    }
+
+    location /lua-json {
+      default_type 'application/json';
+      content_by_lua "ngx.say('{\"message\":\"this is json with Lua.\"}')";
+    }
+
+    location /lua-hello {
+      default_type 'text/plain';
+      content_by_lua "ngx.say('Hello world from Lua.')";
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   {{ nginx_www_dir }};
+    }
+  }
+}
