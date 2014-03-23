@@ -1,0 +1,5 @@
+- name: restart elasticsearch
+  tags:
+    - install-es
+    - es 
+  service: name=elasticsearch state=restarted 

@@ -1,0 +1,11 @@
+es_dir: /opt/elasticsearch
+es_log_dir: /var/log/elasticsearch
+es_config_dir: /etc/elasticsearch
+es_user: elasticsearch
+es_group: elasticsearch
+es_version: 1.1.0
+
+es_cluster_name: your_cluster_name
+es_node_name: your_node_name
+es_index_number_of_shards: 1
+es_index_number_of_replicas: 0

@@ -1,0 +1,5 @@
+- hosts: es_servers 
+  user: "{{ remote_user }}"
+  sudo: yes
+  roles:
+    - elasticsearch 
