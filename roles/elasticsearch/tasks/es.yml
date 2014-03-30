@@ -1,0 +1,39 @@
+- name: install jre headress
+  tags: install-es
+  apt: pkg={{item}} force=no update_cache=yes
+  with_items:
+    - openjdk-7-jre-headless
+
+- name: download elasticsearch deb package
+  tags: install-es
+  get_url:
+    url=https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-{{ es_version }}.deb
+    dest={{ es_dir }}/elasticsearch-{{ es_version }}.deb
+
+- name: install elasticsearch deb
+  tags: install-es
+  command: dpkg -i elasticsearch-{{ es_version }}.deb
+    chdir={{ es_dir }}
+    creates=/usr/share/elasticsearch/bin/elasticsearch
+  notify:
+    - restart elasticsearch
+
+- name: update elasticsearch.yml
+  tags:
+    -  install-es
+    -  update-es-yml
+  template: src=elasticsearch.yml.j2 dest={{ es_config_dir }}/elasticsearch.yml
+  notify:
+    - restart elasticsearch
+
+- name: install plugins
+  tags:
+    -  install-es
+    -  install-es-plugins
+  command: /usr/share/elasticsearch/bin/plugin --install {{ item.repo }}
+    creates=/usr/share/elasticsearch/plugins/{{ item.name }}
+  with_items:
+    - { name: head,    repo: "mobz/elasticsearch-head" }
+    - { name: bigdesk, repo: "lukas-vlcek/bigdesk" }
+  notify:
+    - restart elasticsearch
