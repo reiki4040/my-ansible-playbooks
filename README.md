@@ -3,9 +3,17 @@ my-ansible-playbooks
 
 my playbooks for practice
 
-ansible 1.4.4
+ansible 1.5.3
 MacOSX 10.9
 
+## playbook list
+
+* commons
+* Supervisord
+* nginx (package)
+* responser(nginx from source + Lua + Redis)
+* Growthforecast
+* Elasticsearch (deb package)
 
 ## example Responser
 
