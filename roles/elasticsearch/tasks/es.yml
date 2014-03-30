@@ -8,12 +8,12 @@
   tags: install-es
   get_url:
     url=https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-{{ es_version }}.deb
-    dest={{ es_dir }}/elasticsearch-{{ es_version }}.deb
+    dest={{ temp_dir }}/elasticsearch-{{ es_version }}.deb
 
 - name: install elasticsearch deb
   tags: install-es
   command: dpkg -i elasticsearch-{{ es_version }}.deb
-    chdir={{ es_dir }}
+    chdir={{ temp_dir }}
     creates=/usr/share/elasticsearch/bin/elasticsearch
   notify:
     - restart elasticsearch

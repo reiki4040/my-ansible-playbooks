@@ -1,4 +1,4 @@
-es_dir: /opt/elasticsearch
+temp_dir: /tmp
 es_log_dir: /var/log/elasticsearch
 es_config_dir: /etc/elasticsearch
 es_user: elasticsearch
