@@ -35,6 +35,7 @@
   with_items:
     - { name: head,    repo: "mobz/elasticsearch-head" }
     - { name: bigdesk, repo: "lukas-vlcek/bigdesk" }
-    - { name: kuromoji, repo: "elasticsearch/elasticsearch-analysis-kuromoji/{{ kuromoji_version }}" }
+    - { name: analysis-icu, repo: "elasticsearch/elasticsearch-analysis-icu/{{ analysis_icu_version }}" }
+    - { name: analysis-kuromoji, repo: "elasticsearch/elasticsearch-analysis-kuromoji/{{ kuromoji_version }}" }
   notify:
     - restart elasticsearch
