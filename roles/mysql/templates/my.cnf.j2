@@ -1,0 +1,49 @@
+[mysqld]
+# Remove leading # and set to the amount of RAM for the most important data
+# cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
+# innodb_buffer_pool_size = 128M
+
+# Remove leading # to turn on a very important data integrity option: logging
+# changes to the binary log between backups.
+# log_bin
+
+# These are commonly set, remove the # and set as required.
+basedir = {{ mysql_dir }}/server-5.6
+datadir = {{ mysql_dir }}/data
+port = 3306
+server_id = 1
+socket = {{ mysql_dir }}/tmp/mysql.sock
+
+user = {{ mysql_user }}
+# tempdir = 
+
+pid-file = /var/run/mysql/mysql-server.pid
+
+character-set-server = utf8
+collation-server = utf8_general_ci
+
+default-storage-engine  = innodb
+
+max_connections = {{ mysql_max_connections }}
+wait_timeout = {{ mysql_wait_timeout }}
+
+# Remove leading # to set options mainly useful for reporting servers.
+# The server defaults are faster for transactions and fast SELECTs.
+# Adjust sizes as needed, experiment to find the optimal values.
+# join_buffer_size = 128M
+# sort_buffer_size = 2M
+# read_rnd_buffer_size = 2M
+
+### LOG
+log_output = FILE
+log_error = /var/log/mysql/mysql-server-error.log
+log-slow-admin-statements = 1
+log-queries-not-using-indexes = 1
+slow_query_log = 1
+long_query_time = 1
+log-bin=mysql-bin
+expire_logs_days = 7
+
+[client]
+socket  = /usr/local/mysql/current/tmp/mysql.sock
+port = 3306

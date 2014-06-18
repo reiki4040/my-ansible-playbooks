@@ -1,0 +1,72 @@
+- name: add mysql group
+  tags: mysql-install
+  group: name="{{ mysql_group }}" state=present
+
+- name: add mysql user
+  tags: mysql-install
+  user: name="{{ mysql_user }}" group="{{ mysql_group }}" state=present system=yes
+- name: create mysql dir
+  tags: mysql-install
+  file: state=directory path="{{ mysql_dir }}"
+        group=root owner=root
+        mode=755
+
+- name: create mysql log dir
+  tags: mysql-install
+  file: state=directory path="{{ item  }}"
+        group={{ mysql_group }} owner={{ mysql_user }}
+        mode=755
+  with_items:
+    - /var/log/mysql
+    - /var/run/mysql
+    - "{{ mysql_dir }}/tmp"
+
+- name: download mysql 5.6 deb file
+  tags: mysql-install
+  get_url: url="https://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-{{ mysql_version }}-debian6.0-x86_64.deb" dest="{{ mysql_dir }}/mysql-{{ mysql_version }}.deb"
+
+- name: install mysql 5.6 deb file
+  tags: mysql-install
+  command: dpkg -i {{ mysql_dir }}/mysql-{{ mysql_version }}.deb chdir={{ mysql_dir }} creates={{ mysql_dir }}/server-5.6
+
+- name: install mysql dependency
+  tags: mysql-install
+  apt: pkg="{{ item }}" force=yes update_cache=yes
+  with_items:
+    - libaio1
+
+- name: create mysql dir
+  tags: mysql-install
+  file: state=directory path="{{ mysql_dir }}/{{ item }}"
+        group="{{ mysql_group }}" owner="{{ mysql_user }}" recurse=yes mode=744
+  with_items:
+    - mysql-server-5.6
+    - data/mysql
+
+- name: install mysql data
+  tags: mysql-install
+  command: "install -o mysql -g mysql -d {{ mysql_dir }}/data"
+
+- name: install mysql data
+  tags: mysql-install
+  command: "{{ mysql_dir }}/server-5.6/scripts/mysql_install_db --user={{ mysql_user }} --datadir={{ mysql_dir }}/data creates=/var/run/mysql/mysql-server.pid"
+
+- name: create my.cnf
+  tags: mysql-install
+  template: src=my.cnf.j2 dest=/etc/my.cnf backup=yes
+
+- name: copy init.d file
+  tags: mysql-install
+  command: cp -a {{ mysql_dir }}/server-5.6/support-files/mysql.server /etc/init.d/mysql-server
+
+- name: update rc
+  tags: mysql-install
+  command: update-rc.d mysql-server defaults
+
+- name: start mysql-server service
+  tags: mysql-install
+  service: name=mysql-server state=started
+
+- name: set PATH
+  tags: mysql-install
+  template: src=mysql.sh.j2 dest=/etc/profile.d/mysql.sh

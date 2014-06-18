@@ -1,0 +1,5 @@
+- hosts: mysql_servers
+  user: "{{ remote_user }}"
+  sudo: yes
+  roles:
+    - mysql 
