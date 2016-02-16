@@ -1,0 +1,14 @@
+- name: common | create group
+  tags: user
+  group: name={{ item }}
+  with_items: linux_groups
+
+- name: common | create user
+  tags: user
+  user: name={{ item.name }} shell=/bin/bash group={{ item.group }}
+  with_items: linux_users
+
+- name: common | set ssh authorized_keys from github
+  tags: user
+  authorized_key: user={{ item.name }} key=https://github.com/{{ item.github_user }}.keys
+  with_items: linux_users

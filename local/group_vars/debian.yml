@@ -1,0 +1,3 @@
+# if you override defaults variable by host, then below
+#linux_users:
+#  - { name: reiki2, github_user: reiki4040, group: dev }

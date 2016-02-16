@@ -1,0 +1,5 @@
+linux_groups:
+  - dev
+
+linux_users:
+  - { name: reiki, github_user: reiki4040, group: dev }
